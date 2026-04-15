@@ -1,0 +1,110 @@
+unit UnitPedido;
+
+interface
+
+uses
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Variants, System.Classes, Vcl.Graphics,
+  Vcl.Controls, Vcl.Forms, Vcl.Dialogs, UnitCadastroModelo, Data.DB, Vcl.Grids,
+  Vcl.DBGrids, Vcl.StdCtrls, Vcl.Buttons, Vcl.ExtCtrls, Vcl.ComCtrls,
+  Vcl.DBCtrls, Vcl.Mask, Vcl.NumberBox, FireDAC.Stan.Intf, FireDAC.Stan.Option,
+  FireDAC.Stan.Param, FireDAC.Stan.Error, FireDAC.DatS, FireDAC.Phys.Intf,
+  FireDAC.DApt.Intf, FireDAC.Stan.Async, FireDAC.DApt, FireDAC.Comp.DataSet,
+  FireDAC.Comp.Client;
+
+type
+  TFormPedido = class(TFormCadastroModelo)
+    DBGridItensPedido: TDBGrid;
+    DBEditReferencia: TDBEdit;
+    Label1: TLabel;
+    DBEditNumeroPedido: TDBEdit;
+    Label2: TLabel;
+    Label3: TLabel;
+    DBEditData: TDBEdit;
+    Label4: TLabel;
+    dsCliente: TDataSource;
+    DBLookupComboBoxCliente: TDBLookupComboBox;
+    Label5: TLabel;
+    DBComboBoxTipoOperacao: TDBComboBox;
+    Label6: TLabel;
+    DBEditTotalPedido: TDBEdit;
+    Label7: TLabel;
+    dsProduto: TDataSource;
+    PanelAddItem: TPanel;
+    SpeedButton1: TSpeedButton;
+    DBComboBoxItem: TDBComboBox;
+    NumberBoxQtde: TNumberBox;
+    Label8: TLabel;
+    Label9: TLabel;
+    FDQueryAtualizaTotal: TFDQuery;
+    procedure SpeedButton1Click(Sender: TObject);
+    procedure SpeedButtonSalvarClick(Sender: TObject);
+    procedure SpeedButtonEditarClick(Sender: TObject);
+    procedure SpeedButtonNovoClick(Sender: TObject);
+  private
+    { Private declarations }
+  public
+    { Public declarations }
+  end;
+
+var
+  FormPedido: TFormPedido;
+
+implementation
+
+{$R *.dfm}
+
+uses UnitDM;
+
+procedure TFormPedido.SpeedButton1Click(Sender: TObject);
+begin
+  inherited;
+
+  with DM.DataSourceItemPedido.DataSet do
+  begin
+    Append;
+    FieldByName('ID_PEDIDO').Value := ds.DataSet.FieldByName('ID_PEDIDO').Value;
+    FieldByName('ID_PRODUTO').Value := dsProduto.DataSet.FieldByName('ID_PRODUTO').Value;
+    FieldByName('VALOR_UNITARIO').Value := dsProduto.DataSet.FieldByName('VALOR').Value;
+    FieldByName('QUANTIDADE').Value := NumberBoxQtde.Value;
+    Post;
+  end;
+
+  DM.FDQueryItemPedido.ApplyUpdates(0);
+  DM.FDQueryPedido.ApplyUpdates(0);
+
+  FDQueryAtualizaTotal.ExecSQL;
+
+  DM.DataSourcePedido.DataSet.Edit;
+end;
+
+procedure TFormPedido.SpeedButtonEditarClick(Sender: TObject);
+begin
+//  inherited;
+  if not DM.DataSourcePedido.DataSet.IsEmpty then
+  begin
+    DM.DataSourcePedido.DataSet.Edit;
+    PageControlCadastro.ActivePage := TabSheetDados;
+  end
+  else
+    ShowMessage('Nenhum registro selecionado!');
+
+end;
+
+procedure TFormPedido.SpeedButtonNovoClick(Sender: TObject);
+begin
+//  inherited;
+  DM.DataSourcePedido.DataSet.Append;
+  PageControlCadastro.ActivePage := TabSheetDados;
+end;
+
+procedure TFormPedido.SpeedButtonSalvarClick(Sender: TObject);
+begin
+//  inherited;
+  DM.DataSourcePedido.DataSet.Post;
+  PageControlCadastro.ActivePage := TabSheetBusca;
+
+  DM.FDQueryItemPedido.ApplyUpdates(0);
+  DM.FDQueryPedido.ApplyUpdates(0);
+end;
+
+end.
